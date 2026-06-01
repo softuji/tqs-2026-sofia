@@ -38,3 +38,32 @@ def validar_email(email: str | None) -> bool:
     if not isinstance(email, str) or not email:
         return False
     return _REGEX_EMAIL.match(email) is not None
+
+def calcular_dv_cnpj(digitos: str, peso_inicial: int) -> int:
+    soma = 0
+    
+    for i in range(len(digitos)):
+        soma += int(digitos[i]) * peso_inicial
+        peso_inicial -= 1
+        if peso_inicial < 2:
+            peso_inicial = 9
+    
+    resto = (soma * 10) % 11
+    return 0 if resto == 10 else resto
+
+
+def validar_cnpj(cnpj: str | None) -> bool:
+    if not isinstance(cnpj, str):
+        return False
+    
+    apenas_digitos = re.sub(r"[./\-\s]", "", cnpj)
+    
+    if len(apenas_digitos) != 14 or not apenas_digitos.isdigit():
+        return False
+    
+    if re.match(r"^(\d)\1{13}$", apenas_digitos):
+        return False
+    primeiro = calcular_dv_cnpj(apenas_digitos[:12], 5)
+    segundo = calcular_dv_cnpj(apenas_digitos[:13], 6)
+
+    return int(apenas_digitos[12]) == primeiro and int(apenas_digitos[13]) == segundo
