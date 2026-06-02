@@ -8,7 +8,7 @@ Os capítulos 5 (TDD) e 10 (atividade prática) sugerem novos testes
 para cobrir casos de borda — adicione-os à medida que evoluir o projeto.
 """
 
-from src.validators import validar_cpf, validar_email, validar_cnpj
+from src.validators import validar_cnpj, validar_cpf, validar_email
 
 
 def test_aceita_cpf_valido():
