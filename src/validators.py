@@ -39,31 +39,23 @@ def validar_email(email: str | None) -> bool:
         return False
     return _REGEX_EMAIL.match(email) is not None
 
-def calcular_dv_cnpj(digitos: str, peso_inicial: int) -> int:
-    soma = 0
 
-    for i in range(len(digitos)):
-        soma += int(digitos[i]) * peso_inicial
-        peso_inicial -= 1
-        if peso_inicial < 2:
-            peso_inicial = 9
-
-    resto = (soma * 10) % 11
-    return 0 if resto == 10 else resto
+def _calcular_dv_cnpj(digitos: str, pesos: list[int]) -> int:
+    soma = sum(int(d) * p for d, p in zip(digitos, pesos, strict=True))
+    resto = soma % 11
+    return 0 if resto < 2 else 11 - resto
 
 
 def validar_cnpj(cnpj: str | None) -> bool:
     if not isinstance(cnpj, str):
         return False
-
-    apenas_digitos = re.sub(r"[./\-\s]", "", cnpj)
-
+    apenas_digitos = re.sub(r"[.\-/\s]", "", cnpj.strip())
     if len(apenas_digitos) != 14 or not apenas_digitos.isdigit():
         return False
-
-    if re.match(r"^(\d)\1{13}$", apenas_digitos):
+    if len(set(apenas_digitos)) == 1:
         return False
-    primeiro = calcular_dv_cnpj(apenas_digitos[:12], 5)
-    segundo = calcular_dv_cnpj(apenas_digitos[:13], 6)
-
-    return int(apenas_digitos[12]) == primeiro and int(apenas_digitos[13]) == segundo
+    pesos_primeiro = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    pesos_segundo = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    primeiro = _calcular_dv_cnpj(apenas_digitos[:12], pesos_primeiro)
+    segundo = _calcular_dv_cnpj(apenas_digitos[:13], pesos_segundo)
+    return apenas_digitos[12] == str(primeiro) and apenas_digitos[13] == str(segundo)
